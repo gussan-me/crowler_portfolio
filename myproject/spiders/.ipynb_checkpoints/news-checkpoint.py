@@ -12,11 +12,14 @@ class NewsSpider(scrapy.Spider):
         """
         トップページのトピックス一覧から個々のトピックスへのリンクを抜き出してたどる。
         """
-        for url in response.css('ul.topicsList_main a::attr("href")').re(r'/pickup/\d+$'):
+        for url in response.css('section.topics a::attr("href")').re(r'/pickup/\d+$'):
             yield response.follow(url, self.parse_topics)
 
     def parse_topics(self, response):
         """
         トピックスのページからタイトルと本文を抜き出す。
         """
-        pass
+        item = Headline()  # Headlineオブジェクトを作成。
+        item['title'] = response.css('[data-ual-view-type="digest"] > a > p::text').get()  # タイトル
+        item['body'] = response.css('[data-ual-view-type="digest"] > p').xpath('string()').get()  # 本文
+        yield item  # Itemをyieldして、データを抽出する。
